@@ -1,0 +1,30 @@
+{
+  "name": "p2_quiz",
+  "version": "1.0.0",
+  "description": "Proyecto Quiz",
+  "main": "main.js",
+  "dependencies": {
+    "chalk": "^2.3.1",
+    "figlet": "^1.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/XiaoLuo95/P2_Quiz.git"
+  },
+  "keywords": [
+    "quiz",
+    "core",
+    "node"
+  ],
+  "author": "Xiao Luo",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/XiaoLuo95/P2_Quiz/issues"
+  },
+  "homepage": "https://github.com/XiaoLuo95/P2_Quiz#readme"
+}
