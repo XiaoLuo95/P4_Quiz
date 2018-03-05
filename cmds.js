@@ -62,7 +62,7 @@ exports.showCmd = (rl, id) => {
 /**
  * Añade un nuevo quiz al modelo.
  * Pregunta interactivamente por la pregunta y por la respuesta.
- *
+ *cle
  * @param rl    Objeto readline usado para implementar el CLI.
  */
 exports.addCmd = rl => {
@@ -149,7 +149,7 @@ exports.testCmd = (rl, id) => {
         try {
             const quiz = model.getByIndex(id);
             rl.question(`${colorize(quiz.question+'? ', 'red')}`, answer => {
-                if (answer.replace(/\s+/g, '').toLowerCase() === quiz.answer.toLowerCase()) {
+                if (limpia(answer) === limpia(quiz.answer)) {
                     log('Su respuesta es correcta.');
                     biglog('Correcta', 'green');
                     rl.prompt();
@@ -196,7 +196,7 @@ exports.playCmd = rl => {
             let quiz = model.getByIndex(id);
 
             rl.question(`${colorize(quiz.question+'? ', 'red')}`, answer => {
-                if (answer.replace(/\s+/g, '').toLowerCase() === quiz.answer.toLowerCase()) {
+                if (limpia(answer) === limpia(quiz.answer)) {
                     score += 1;
                     log(`CORRECTO - Lleva ${score} aciertos.`);
                     playOne();
@@ -232,4 +232,21 @@ exports.creditsCmd = rl => {
  */
 exports.quitCmd = rl => {
     rl.close();
+};
+
+
+/**
+ *  Limpiar la entrada para hacerle case non-sensitive.
+ *
+ *  @param comp String de entrada.
+ */
+limpia = comp => {
+    comp = comp.replace(/\s+/g, '');
+    comp = comp.toLowerCase();
+    comp = comp.replace(/á/gi, "a");
+    comp = comp.replace(/é/gi, "e");
+    comp = comp.replace(/í/gi, "i");
+    comp = comp.replace(/ó/gi, "o");
+    comp = comp.replace(/ú/gi, "u");
+    return comp;
 };
