@@ -215,31 +215,30 @@ exports.editCmd = (rl, id) => {
  * @param id Clave del quiz a probar.
  */
 exports.testCmd = (rl, id) => {
-
-    if (typeof id === "undefined") {
-        errorlog(`Falta el parámetro id.`);
-        rl.prompt();
-    } else {
-        try {
-            const quiz = model.getByIndex(id);
-            rl.question(`${colorize(quiz.question+'? ', 'red')}`, answer => {
-                if (limpia(answer) === limpia(quiz.answer)) {
-                    log('Su respuesta es correcta.');
-                    biglog('Correcta', 'green');
-                    rl.prompt();
-                } else {
-                    log('Su respuesta es incorrecta.');
-                    biglog('Incorrecta', 'red');
-                    rl.prompt();
-                }
-            });
-        } catch(error) {
-            errorlog(error.message);
-            rl.prompt();
+    validateId(id)
+    .then(id => models.quiz.findById(id))
+    .then(quiz => {
+        if (!quiz) {
+            throw new Error(`No existe un quiz asociado al id=${id}.`);
         }
-    }
+        return makeQuestion(rl, quiz.question + '？ ')
+        .then(a => {
+            if (limpia(a) === limpia(quiz.answer)) {
+                log('Su respuesta es correcta.');
+                biglog('Correcta', 'green');
+            } else {
+                log('Su respuesta es incorrecta.');
+                biglog('Incorrecta', 'red');
+            }
+        });
+    })
+    .catch(error => {
+        errorlog(error.message);
+    })
+    .then(() => {
+        rl.prompt();
+    })
 };
-
 
 /**
  * Pregunta todos los quizzes existentes en el modelo en orden aleatorio.
@@ -248,17 +247,18 @@ exports.testCmd = (rl, id) => {
  * @param rl    Objeto readline usado para implementar el CLI.
  */
 exports.playCmd = rl => {
-
-    let score = 0;
-    const Quantity = model.count();
-
     let toBeResolved = [];
-    for (i=0; i<Quantity; i++) {
-        toBeResolved.push(i);
-    }
+    let score = 0;
+
+    models.quiz.findAll()
+    .each(quiz => {
+        toBeResolved.push(quiz.id);
+    })
+    .catch(error => {
+        errorlog(error.message);
+});
 
     const playOne = () => {
-
         if (toBeResolved.length === 0) {
             log('No hay nada más que preguntar.');
             log(`Fin del juego. Aciertos: ${score}`);
@@ -267,22 +267,28 @@ exports.playCmd = rl => {
         } else {
             let id = toBeResolved[Math.floor(Math.random() * toBeResolved.length)];
             toBeResolved.splice(toBeResolved.indexOf(id), 1);
-            let quiz = model.getByIndex(id);
-
-            rl.question(`${colorize(quiz.question+'? ', 'red')}`, answer => {
-                if (limpia(answer) === limpia(quiz.answer)) {
-                    score += 1;
-                    log(`CORRECTO - Lleva ${score} aciertos.`);
-                    playOne();
-                } else {
-                    log('INCORRECTO.');
-                    log(`Fin del juego. Aciertos: ${score}`);
-                    biglog(`${score}`, `magenta`);
-                    rl.prompt();
-                }
+            validateId(id)
+            .then(id => models.quiz.findById(id))
+            .then(quiz => {
+                return makeQuestion(rl, quiz.question + '? ')
+                .then(a => {
+                    if (limpia(a) === limpia(quiz.answer)) {
+                        score += 1;
+                        log(`CORRECTO - Lleva ${score} aciertos.`);
+                        playOne();
+                    } else {
+                        log('INCORRECTO.');
+                        log(`Fin del juego. Aciertos: ${score}`);
+                    }
+                });
+            })
+            .catch(error => {
+                errorlog(error.message);
+            }).then(() => {
+                rl.prompt();
             });
         }
-    };
+    }
     playOne();
 };
 
