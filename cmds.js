@@ -39,7 +39,7 @@ exports.listCmd = rl => {
     })
     .then(() => {
         rl.prompt();
-    });
+    })
 };
 
 
@@ -63,7 +63,7 @@ const validateId = id => {
                 resolve(id);
             }
         }
-    });
+    })
 };
 
 
@@ -87,7 +87,7 @@ exports.showCmd = (rl, id) => {
     })
     .then(() => {
         rl.prompt();
-    });
+    })
 };
 
 
@@ -109,7 +109,7 @@ const makeQuestion = (rl, text) => {
         rl.question(colorize(text, 'red'), answer => {
             resolve(answer.trim());
         });
-    });
+    })
 };
 
 /**
@@ -141,7 +141,7 @@ exports.addCmd = rl => {
     })
     .then(() => {
         rl.prompt();
-    });
+    })
 };
 
 
@@ -159,7 +159,7 @@ exports.deleteCmd = (rl, id) => {
     })
     .then(() => {
         rl.prompt();
-    });
+    })
 };
 
 
@@ -204,7 +204,7 @@ exports.editCmd = (rl, id) => {
     })
     .then(() => {
         rl.prompt();
-    });
+    })
 };
 
 
@@ -237,7 +237,7 @@ exports.testCmd = (rl, id) => {
     })
     .then(() => {
         rl.prompt();
-    });
+    })
 };
 
 
@@ -257,7 +257,7 @@ const settingUp = (text) => {
         .then(() => {
             resolve(text);
         })
-    });
+    })
 };
 
 
@@ -272,26 +272,7 @@ const aleatorio = (id, text) => {
         id = text[Math.floor(Math.random() * text.length)];
         text.splice(text.indexOf(id), 1);
         resolve(id);
-    });
-};
-
-
-/**
- * Función que comprueba si el juego se ha acabado correctamente.
- *
- * @param text  Array que almacena los índices de quizzes.
- * @param score La nota obtenida.
- * @returns {*}
- */
-const checkFinished = (text, score) => {
-    return new Sequelize.Promise((resolve, reject) => {
-        if (text.length === 0) {
-            log('No hay nada más que preguntar.');
-            log(`Fin del juego. Aciertos: ${score}`);
-            biglog(`${score}`, `magenta`);
-        }
-        resolve();
-    });
+    })
 };
 
 
@@ -306,7 +287,7 @@ const checkFinished = (text, score) => {
  */
 const bucle = (id, text, rl, score) => {
     return new Sequelize.Promise((resolve, reject) => {
-        return aleatorio(id, text)
+        aleatorio(id, text)
         .then(a => {
             validateId(a)
             .then(id => models.quiz.findById(id))
@@ -316,11 +297,13 @@ const bucle = (id, text, rl, score) => {
                     if (limpia(a) === limpia(quiz.answer)) {
                         score += 1;
                         log(`CORRECTO - Lleva ${score} aciertos.`);
-                        checkFinished(text, score);
                         if (text.length !== 0) {
-                            return bucle(id, text, rl, score);
+                            bucle(id, text, rl, score);
                             resolve();
                         } else {
+                            log('No hay nada más que preguntar.');
+                            log(`Fin del juego. Aciertos: ${score}`);
+                            biglog(`${score}`, `magenta`);
                             rl.prompt();
                             resolve();
                         }
@@ -332,9 +315,9 @@ const bucle = (id, text, rl, score) => {
                         resolve();
                     }
                 })
-            });
-        });
-    });
+            })
+        })
+    })
 };
 
 /**
@@ -351,11 +334,11 @@ exports.playCmd = rl => {
 
     settingUp(toBeResolved)
     .then(() => {
-        return bucle(id, toBeResolved, rl, score);
+        bucle(id, toBeResolved, rl, score);
     })
     .catch(error => {
         errorlog(error.message);
-    });
+    })
 };
 
 
