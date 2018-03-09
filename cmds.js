@@ -321,12 +321,14 @@ const bucle = (id, text, rl, score) => {
                             return bucle(id, text, rl, score);
                             resolve();
                         } else {
+                            rl.prompt();
                             resolve();
                         }
                     } else {
                         log('INCORRECTO.');
                         log(`Fin del juego. Aciertos: ${score}`);
                         biglog(`${score}`, `magenta`);
+                        rl.prompt();
                         resolve();
                     }
                 })
@@ -353,10 +355,6 @@ exports.playCmd = rl => {
     })
     .catch(error => {
         errorlog(error.message);
-    })
-    .then(() => {
-        log(`estoy aquí`);
-        rl.prompt();
     });
 };
 

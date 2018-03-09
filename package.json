@@ -1,5 +1,5 @@
 {
-  "name": "p2_quiz",
+  "name": "p3_quiz",
   "version": "1.0.0",
   "description": "Proyecto Quiz",
   "main": "main.js",
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/XiaoLuo95/P2_Quiz.git"
+    "url": "git+https://github.com/XiaoLuo95/P3_Quiz.git"
   },
   "keywords": [
     "quiz",
@@ -26,7 +26,7 @@
   "author": "Xiao Luo",
   "license": "Unlicense",
   "bugs": {
-    "url": "https://github.com/XiaoLuo95/P2_Quiz/issues"
+    "url": "https://github.com/XiaoLuo95/P3_Quiz/issues"
   },
-  "homepage": "https://github.com/XiaoLuo95/P2_Quiz#readme"
+  "homepage": "https://github.com/XiaoLuo95/P3_Quiz#readme"
 }
