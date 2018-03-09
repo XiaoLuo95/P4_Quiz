@@ -204,7 +204,7 @@ exports.editCmd = (rl, id) => {
     })
     .then(() => {
         rl.prompt();
-    })
+    });
 };
 
 
@@ -237,7 +237,102 @@ exports.testCmd = (rl, id) => {
     })
     .then(() => {
         rl.prompt();
-    })
+    });
+};
+
+
+/**
+ * Función que carga los índices de elementos de quiz en un array.
+ *
+ * @param text  Array de índices
+ * @param id    Índices de elementos
+ * @returns {*}
+ */
+const settingUp = (text) => {
+    return new Sequelize.Promise((resolve, reject) => {
+        models.quiz.findAll()
+        .each(quiz => {
+            text.push(quiz.id);
+        })
+        .then(() => {
+            resolve(text);
+        })
+    });
+};
+
+
+/**
+ * Función que devuelve un índice aleatorio dentro del array que pasa como parámetro.
+ * @param id    Índice aleatorio.
+ * @param text  Array de índices.
+ * @returns {*}
+ */
+const aleatorio = (id, text) => {
+    return new Sequelize.Promise((resolve, reject) => {
+        id = text[Math.floor(Math.random() * text.length)];
+        text.splice(text.indexOf(id), 1);
+        resolve(id);
+    });
+};
+
+
+/**
+ * Función que comprueba si el juego se ha acabado correctamente.
+ *
+ * @param text  Array que almacena los índices de quizzes.
+ * @param score La nota obtenida.
+ * @returns {*}
+ */
+const checkFinished = (text, score) => {
+    return new Sequelize.Promise((resolve, reject) => {
+        if (text.length === 0) {
+            log('No hay nada más que preguntar.');
+            log(`Fin del juego. Aciertos: ${score}`);
+            biglog(`${score}`, `magenta`);
+        }
+        resolve();
+    });
+};
+
+
+/**
+ * El bucle que reaiza con la función de play.
+ *
+ * @param id    Índice del quiz a realizar.
+ * @param text  Array que almacena los índices de quizzes pendientes.
+ * @param rl    Objeto readline usado para implementar el CLI.
+ * @param score Nota obtenida hasta momento.
+ * @returns {*}
+ */
+const bucle = (id, text, rl, score) => {
+    return new Sequelize.Promise((resolve, reject) => {
+        return aleatorio(id, text)
+        .then(a => {
+            validateId(a)
+            .then(id => models.quiz.findById(id))
+            .then(quiz => {
+                return makeQuestion(rl, quiz.question + '? ')
+                .then(a => {
+                    if (limpia(a) === limpia(quiz.answer)) {
+                        score += 1;
+                        log(`CORRECTO - Lleva ${score} aciertos.`);
+                        checkFinished(text, score);
+                        if (text.length !== 0) {
+                            return bucle(id, text, rl, score);
+                            resolve();
+                        } else {
+                            resolve();
+                        }
+                    } else {
+                        log('INCORRECTO.');
+                        log(`Fin del juego. Aciertos: ${score}`);
+                        biglog(`${score}`, `magenta`);
+                        resolve();
+                    }
+                })
+            });
+        });
+    });
 };
 
 /**
@@ -247,49 +342,22 @@ exports.testCmd = (rl, id) => {
  * @param rl    Objeto readline usado para implementar el CLI.
  */
 exports.playCmd = rl => {
+
     let toBeResolved = [];
     let score = 0;
+    let id;
 
-    models.quiz.findAll()
-    .each(quiz => {
-        toBeResolved.push(quiz.id);
+    settingUp(toBeResolved)
+    .then(() => {
+        return bucle(id, toBeResolved, rl, score);
     })
     .catch(error => {
         errorlog(error.message);
-});
-
-    const playOne = () => {
-        if (toBeResolved.length === 0) {
-            log('No hay nada más que preguntar.');
-            log(`Fin del juego. Aciertos: ${score}`);
-            biglog(`${score}`, `magenta`);
-            rl.prompt();
-        } else {
-            let id = toBeResolved[Math.floor(Math.random() * toBeResolved.length)];
-            toBeResolved.splice(toBeResolved.indexOf(id), 1);
-            validateId(id)
-            .then(id => models.quiz.findById(id))
-            .then(quiz => {
-                return makeQuestion(rl, quiz.question + '? ')
-                .then(a => {
-                    if (limpia(a) === limpia(quiz.answer)) {
-                        score += 1;
-                        log(`CORRECTO - Lleva ${score} aciertos.`);
-                        playOne();
-                    } else {
-                        log('INCORRECTO.');
-                        log(`Fin del juego. Aciertos: ${score}`);
-                    }
-                });
-            })
-            .catch(error => {
-                errorlog(error.message);
-            }).then(() => {
-                rl.prompt();
-            });
-        }
-    }
-    playOne();
+    })
+    .then(() => {
+        log(`estoy aquí`);
+        rl.prompt();
+    });
 };
 
 
